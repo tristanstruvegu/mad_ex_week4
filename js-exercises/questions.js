@@ -56,8 +56,14 @@
 
 function processData(data, callback) {
   // Your implementation here
+  if (data.includes("error")) {
+    setTimeout(() => { callback(new Error("process data error")); }, 200);
+  } else {
+    setTimeout(() => { callback(null, data.toUpperCase()); }, 200);
+  }
 }
 
+const { rejects } = require("assert");
 /**
  * Exercise 2: Student File Creation with Validation in Node.js
  *
@@ -116,7 +122,37 @@ const fs = require("fs");
  * @param {Function} callback - A callback function that handles the result of the file operation.
  */
 function createStudentFile(studentName, studentInfo, callback) {
-  // Your implementation here
+
+  // Make camel case filename  
+  const filename = toCamelCaseFileName(studentName);
+
+  // check if file exists
+  if (fs.existsSync(filename)) {
+    return callback(new Error("File exists"));
+  }
+
+  // split studentName into array
+  const studentNames = studentName.split(" ");
+  // check that the names match
+  if (studentNames[0] !== studentInfo.firstName && 
+      studentNames[1] !== studentInfo.surName) {
+    return callback(new Error("Wrong Information"));
+  }
+  // make the content for the file
+  const fileInput = `Name: ${studentInfo.firstName} ${studentInfo.surName}
+    Age: ${studentInfo.age}
+    Hobby: ${studentInfo.hobby.join(", ")}`
+  
+    // Write out the file
+  fs.writeFile(filename, fileInput, callback);
+}
+
+function toCamelCaseFileName(inString) {
+  return inString
+    .split(" ")
+    .map((n, i) => 
+      i === 0 ? n.toLowerCase() : n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())
+    .join("") + ".txt";
 }
 
 /**
@@ -155,7 +191,13 @@ function createStudentFile(studentName, studentInfo, callback) {
 
 function loadUserData(userId) {
   // Your implementation here
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      (userId < 1 ? reject(new Error("Invalid user ID")) : resolve({ id: userId, name: "John Doe" }))
+    }, 100);
+  });
 }
+
 
 /**
  * Exercise 4: Fetching Data with Async/Await
